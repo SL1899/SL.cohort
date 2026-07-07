@@ -1,9 +1,10 @@
 Package: SL.cohort
-Title: What the Package Does (One Line, Title Case)
+Title: SL for Cohort Analyses
+Date: 2026-07-07
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+    person(given = "Yanlong", email = "lannon1899@qq.com", role = c("aut", "cre"))
+Description: SL Package for Cohort Analyses
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
