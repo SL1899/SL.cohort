@@ -1,7 +1,7 @@
 Package: SL.cohort
 Title: SL for Cohort Analyses
 Date: 2026-07-07
-Version: 0.0.0.9000
+Version: 0.0.26.0707
 Authors@R: 
     person(given = "Yanlong", email = "lannon1899@qq.com", role = c("aut", "cre"))
 Description: SL Package for Cohort Analyses
