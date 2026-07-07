@@ -16,3 +16,5 @@ Imports:
     tidyselect
 Config/roxygen2/version: 8.0.0
 RoxygenNote: 8.0.0
+URL: https://github.com/SL1899/SL.cohort
+BugReports: https://github.com/SL1899/SL.cohort/issues
