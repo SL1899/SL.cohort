@@ -6,7 +6,10 @@
 
 # 从GitHub主分支的DESCRIPTION文件中读取最新版本号
 # 该函数仅供包内部调用，不需要添加@export
-.github_latest_version <- function(timeout = 3) {
+# 默认最多等待5秒，也允许用户通过options()自行调整
+.github_latest_version <- function(
+    timeout = getOption("SL.cohort.update_timeout", 6)
+) {
 
   # GitHub仓库中DESCRIPTION文件的原始地址
   description_url <- paste0(
@@ -67,7 +70,7 @@
 
   # 设置分隔线
   separator <- "-------------------------------------------------"
-  status_separator <- "  - Version Check"
+  status_separator <- "\n  - Version Check"
 
   # 显示包的基本信息
   packageStartupMessage(separator)
@@ -155,7 +158,7 @@
           github_version
         )
         packageStartupMessage(
-          '  • Update with: devtools::install_github("SL1899/SL.cohort", upgrade = "never")'
+          '  • Update with the codes: pak::pak("SL1899/SL.cohort")'
         )
       }
     }
