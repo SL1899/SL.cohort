@@ -4,3 +4,33 @@
 .httr-oauth
 .DS_Store
 .quarto
+
+# R会话文件
+.Rhistory
+.RData
+.Ruserdata
+.Renviron
+
+# RStudio用户状态
+.Rproj.user/
+
+# 本地数据
+*.csv
+*.xlsx
+*.xls
+*.rds
+*.RDS
+*.sas7bdat
+*.dta
+*.sav
+
+# 分析输出和日志
+*.log
+output/
+results/
+private_data/
+data-raw/private/
+
+# 临时文件
+~$*
+*.tmp
