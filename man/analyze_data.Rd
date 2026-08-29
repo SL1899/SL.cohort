@@ -9,16 +9,13 @@ analyze_data(df, max_levels = 30)
 \arguments{
 \item{df}{输入的数据框。}
 
-\item{max_levels}{整数。分类变量最多提取的水平数量，默认为 30。}
+\item{max_levels}{整数。分类变量最多展示的水平数量，默认为30。}
 }
 \value{
-返回一个包含各变量统计信息和分类水平的 tibble 数据框。
+返回变量统计信息的 tibble 数据框。
 }
 \description{
-结合 skimr 基础统计与自定义的分类变量水平提取功能，生成数据框的详细概览。
-}
-\examples{
-\dontrun{
-df_summary <- analyze_data(iris)
-}
+针对大数据集优化的数据探查函数。
+对定量变量计算缺失、均值、标准差及分位数；
+对分类变量计算缺失、水平数及频数最高的若干水平。
 }
