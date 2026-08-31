@@ -75,7 +75,8 @@ analyze_data <- function(df, max_levels = 30) {
         max = q[5],
         level = NA_integer_,
         is_ordered = NA,
-        level_sortd = NA_character_
+        level_sortd = NA_character_,
+        level_ordered = NA_character_
       )
     }
 
@@ -106,6 +107,13 @@ analyze_data <- function(df, max_levels = 30) {
         ")",
         collapse = "; "
       )
+
+      # 有序因子按定义的levels顺序显示，不附带频数
+      level_ordered <- if (is.factor(x) && is.ordered(x)) {
+        paste(levels(x), collapse = "; ")
+      } else {
+        NA_character_
+      }
 
       # character专属检查
       if (is.character(x)) {
@@ -140,7 +148,8 @@ analyze_data <- function(df, max_levels = 30) {
         max = NA_real_,
         level = min(total_levels, max_levels),
         is_ordered = if (is.factor(x)) is.ordered(x) else NA,
-        level_sortd = level_counts
+        level_sortd = level_counts,
+        level_ordered = level_ordered
       )
     }
 
@@ -167,7 +176,8 @@ analyze_data <- function(df, max_levels = 30) {
         max = NA_real_,
         level = NA_integer_,
         is_ordered = NA,
-        level_sortd = NA_character_
+        level_sortd = NA_character_,
+        level_ordered = NA_character_
       )
     }
   }
