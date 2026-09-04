@@ -4,7 +4,8 @@
 #'
 #' @description 针对大数据集优化的数据探查函数。
 #' 对定量变量计算缺失、均值、标准差及分位数；
-#' 对分类变量计算缺失、水平数及频数最高的若干水平。
+#' 对分类变量计算缺失、水平数及频数最高的若干水平；
+#' 对因子变量额外提取其定义的因子水平顺序。
 #'
 #' @param df 输入的数据框。
 #' @param max_levels 整数。分类变量最多展示的水平数量，默认为30。
@@ -74,9 +75,9 @@ analyze_data <- function(df, max_levels = 30) {
         p75 = q[4],
         max = q[5],
         level = NA_integer_,
-        is_ordered = NA,
         level_sortd = NA_character_,
-        level_ordered = NA_character_
+        is_ordered = NA,
+        level_factor = NA_character_
       )
     }
 
@@ -108,8 +109,8 @@ analyze_data <- function(df, max_levels = 30) {
         collapse = "; "
       )
 
-      # 有序因子按定义的levels顺序显示，不附带频数
-      level_ordered <- if (is.factor(x) && is.ordered(x)) {
+      # factor变量按定义的levels顺序提取水平，不附带频数
+      level_factor <- if (is.factor(x)) {
         paste(levels(x), collapse = "; ")
       } else {
         NA_character_
@@ -147,9 +148,9 @@ analyze_data <- function(df, max_levels = 30) {
         p75 = NA_real_,
         max = NA_real_,
         level = min(total_levels, max_levels),
-        is_ordered = if (is.factor(x)) is.ordered(x) else NA,
         level_sortd = level_counts,
-        level_ordered = level_ordered
+        is_ordered = if (is.factor(x)) is.ordered(x) else NA,
+        level_factor = level_factor
       )
     }
 
@@ -175,9 +176,9 @@ analyze_data <- function(df, max_levels = 30) {
         p75 = NA_real_,
         max = NA_real_,
         level = NA_integer_,
-        is_ordered = NA,
         level_sortd = NA_character_,
-        level_ordered = NA_character_
+        is_ordered = NA,
+        level_factor = NA_character_
       )
     }
   }
