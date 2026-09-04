@@ -12,9 +12,11 @@ ParaCOX(
   adjust_lists = NULL,
   output_file = NULL,
   ph_digits = 3,
+  p_trend = TRUE,
+  ph_test = TRUE,
   pararun = TRUE,
   cores = NULL,
-  log_file = "ParaCOX.log"
+  log_folder = "ParaCOX_log"
 )
 }
 \arguments{
@@ -32,11 +34,20 @@ ParaCOX(
 
 \item{ph_digits}{比例风险假定检验 P 值保留的小数位数。}
 
+\item{p_trend}{是否计算 P for trend，默认为 \code{TRUE}。若为 \code{FALSE}，
+则不拟合趋势检验模型，但结果中仍保留趋势检验相关列，其值为 \code{NA}。}
+
+\item{ph_test}{是否进行比例风险假定检验，默认为 \code{TRUE}。若为 \code{FALSE}，
+则不运行 \code{cox.zph()}，但结果中仍保留 \code{var_ph} 和 \code{global_ph} 列，
+其值为 \code{NA}。}
+
 \item{pararun}{是否使用并行计算。}
 
 \item{cores}{并行工作进程数量；为 \code{NULL} 时自动计算。}
 
-\item{log_file}{日志文件路径。}
+\item{log_folder}{日志文件夹路径。参数值即为实际创建和使用的
+文件夹名称或路径。例如 \code{log_folder = "cox_cause_allvars_log"}
+将创建并使用 \code{cox_cause_allvars_log} 文件夹。}
 }
 \value{
 命名列表。每个元素对应一个结局状态变量的
@@ -46,6 +57,16 @@ Cox 回归结果数据框。
 针对多个结局状态变量调用 \code{\link[=batchCOX02]{batchCOX02()}}，可使用
 PSOCK 集群并行完成计算，并将不同结局的结果输出到
 Excel 的不同工作表。
+}
+\details{
+每个并行worker使用独立日志文件，避免多个worker输出交错。
+分析结束后，日志文件名会包含该worker实际处理的status变量名。
+例如 \code{core_1_death_MABD.log} 表示core 1依次处理了
+\code{death} 和 \code{MABD}。
+
+若某个模型发生错误，该模型前 5 列正常保留，第 6 列及之后
+全部为 \code{NA}；若某个status整体失败，则该status所有模型的
+第 6 列及之后全部为 \code{NA}。所有错误统一汇总到 \code{error.log}。
 }
 \seealso{
 Other Cox regression:

@@ -11,7 +11,9 @@ batchCOX02(
   fixed_vars = NULL,
   adjust_lists = NULL,
   output_file = NULL,
-  ph_digits = 3
+  ph_digits = 3,
+  p_trend = TRUE,
+  ph_test = TRUE
 )
 }
 \arguments{
@@ -28,6 +30,13 @@ batchCOX02(
 \item{output_file}{可选的 Excel 输出路径；为 \code{NULL} 时不导出。}
 
 \item{ph_digits}{比例风险假定检验 P 值保留的小数位数。}
+
+\item{p_trend}{是否计算 P for trend，默认为 \code{TRUE}。若为 \code{FALSE}，
+则不拟合趋势检验模型，但结果中仍保留趋势检验相关列，其值为 \code{NA}。}
+
+\item{ph_test}{是否进行比例风险假定检验，默认为 \code{TRUE}。若为 \code{FALSE}，
+则不运行 \code{cox.zph()}，但结果中仍保留 \code{var_ph} 和 \code{global_ph} 列，
+其值为 \code{NA}。}
 }
 \value{
 一个数据框，每行为一个模型系数，包含 beta、HR、
@@ -35,13 +44,19 @@ batchCOX02(
 }
 \description{
 针对多个暴露变量和多个协变量调整组合批量拟合 Cox
-比例风险模型，同时计算风险比、置信区间、趋势检验和
+比例风险模型，同时可选择计算风险比、置信区间、趋势检验和
 比例风险假定检验结果。
 }
 \details{
 对因子型暴露进行趋势检验时，函数按照该变量当前的
 \code{levels()} 顺序赋值为 1、2、3……。因此，应确保因子水平
 顺序具有明确的等级含义。
+
+若某个模型发生错误，该模型对应结果仍会保留，前 5 列
+\code{model_id}、\code{var_number}、\code{fixed_var}、\code{adjust_vars} 和 \code{level}
+正常保留，第 6 列及之后全部返回 \code{NA}，并继续运行后续模型。
+模型级错误信息同时保存在返回数据框的 \code{model_errors} 属性中，
+供 \code{\link[=ParaCOX]{ParaCOX()}} 汇总生成 \code{error.log}。
 }
 \seealso{
 Other Cox regression:

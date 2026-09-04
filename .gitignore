@@ -34,3 +34,6 @@ data-raw/private/
 # 临时文件
 ~$*
 *.tmp
+
+# 备份文件
+backup/
