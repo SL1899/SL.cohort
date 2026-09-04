@@ -107,6 +107,17 @@
     )
   }
 
+  model_warnings <- attr(result, "model_warnings")
+
+  if (is.null(model_warnings)) {
+    model_warnings <- data.frame(
+      status_var = character(),
+      model_id = integer(),
+      warning = character(),
+      stringsAsFactors = FALSE
+    )
+  }
+
   status_end <- Sys.time()
   duration <- difftime(status_end, status_start, units = "mins")
 
@@ -120,6 +131,7 @@
   list(
     result = result,
     model_errors = model_errors,
+    model_warnings = model_warnings,
     status_error = status_error,
     core_id = core_id
   )
@@ -131,7 +143,8 @@
 .ParaCOX_write_error_log <- function(
   error_file,
   status_errors,
-  model_errors
+  model_errors,
+  model_warnings
 ) {
 
   lines <- c(
@@ -170,6 +183,24 @@
           model_errors$status_var[i],
           model_errors$model_id[i],
           model_errors$error[i]
+        )
+      )
+    }
+  }
+
+  lines <- c(lines, "", "[Model-level warnings]")
+
+  if (nrow(model_warnings) == 0L) {
+    lines <- c(lines, "None")
+  } else {
+    for (i in seq_len(nrow(model_warnings))) {
+      lines <- c(
+        lines,
+        sprintf(
+          "%s | model_id=%d | %s",
+          model_warnings$status_var[i],
+          model_warnings$model_id[i],
+          model_warnings$warning[i]
         )
       )
     }
@@ -475,6 +506,26 @@ ParaCOX <- function(data, time_var, status_vars,
     )
   }
 
+  model_warnings <- do.call(
+    rbind,
+    lapply(raw_results, function(x) {
+      if (nrow(x$model_warnings) > 0L) {
+        x$model_warnings
+      } else {
+        NULL
+      }
+    })
+  )
+
+  if (is.null(model_warnings)) {
+    model_warnings <- data.frame(
+      status_var = character(),
+      model_id = integer(),
+      warning = character(),
+      stringsAsFactors = FALSE
+    )
+  }
+
 
   # ------ 重命名每个core日志，加入实际处理的status名称 ------
 
@@ -530,7 +581,8 @@ ParaCOX <- function(data, time_var, status_vars,
   .ParaCOX_write_error_log(
     error_file = error_file,
     status_errors = status_errors,
-    model_errors = model_errors
+    model_errors = model_errors,
+    model_warnings = model_warnings
   )
 
 

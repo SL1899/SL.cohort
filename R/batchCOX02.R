@@ -260,6 +260,13 @@ batchCOX02 <- function(data, time_var, status_var,
     stringsAsFactors = FALSE
   )
 
+  model_warnings <- data.frame(
+    status_var = character(),
+    model_id = integer(),
+    warning = character(),
+    stringsAsFactors = FALSE
+  )
+
   # 检查趋势检验和PH检验开关
   if (!is.logical(p_trend) || length(p_trend) != 1L || is.na(p_trend)) {
     stop("`p_trend`必须为TRUE或FALSE。")
@@ -321,7 +328,11 @@ batchCOX02 <- function(data, time_var, status_var,
 
 
     # 单个模型发生错误时，仅将该模型结果置为NA并继续后续模型
-    res <- tryCatch({
+    # warning仍正常写入core日志，同时额外收集用于error.log汇总
+    warning_messages <- character()
+
+    res <- withCallingHandlers(
+      tryCatch({
 
       # 构建公式
       formula <- stats::as.formula(
@@ -567,7 +578,30 @@ batchCOX02 <- function(data, time_var, status_var,
         vars = vars,
         model_id = i
       )
-    })
+    }),
+      warning = function(w) {
+        warning_messages <<- c(
+          warning_messages,
+          conditionMessage(w)
+        )
+      }
+    )
+
+    # 汇总该模型的warning；不改变原warning输出和模型结果
+    if (length(warning_messages) > 0L) {
+
+      warning_messages <- unique(warning_messages)
+
+      model_warnings <- rbind(
+        model_warnings,
+        data.frame(
+          status_var = rep(status_var, length(warning_messages)),
+          model_id = rep(i, length(warning_messages)),
+          warning = warning_messages,
+          stringsAsFactors = FALSE
+        )
+      )
+    }
 
     results[[model_name]] <- res
   }
@@ -577,8 +611,9 @@ batchCOX02 <- function(data, time_var, status_var,
   final_result <- do.call(rbind, results)
   rownames(final_result) <- NULL
 
-  # 保存模型级错误信息，供ParaCOX汇总error.log
+  # 保存模型级错误和warning信息，供ParaCOX汇总error.log
   attr(final_result, "model_errors") <- model_errors
+  attr(final_result, "model_warnings") <- model_warnings
 
 
   # 可选：导出到Excel
