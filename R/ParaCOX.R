@@ -402,6 +402,7 @@ ParaCOX <- function(data, time_var, status_vars,
     .export = c(
       "batchCOX02",
       ".batchCOX02_level_names",
+      ".batchCOX02_term_info",
       ".batchCOX02_na_model",
       ".batchCOX02_na_status",
       ".ParaCOX_run_status",

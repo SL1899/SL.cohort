@@ -108,6 +108,86 @@
 }
 
 
+# --- 内部函数：提取变量名、参考组和清洁后的水平名称 ---
+
+.batchCOX02_term_info <- function(data, vars, coef_names) {
+
+  term_var <- rep(NA_character_, length(coef_names))
+  ref <- rep(NA_character_, length(coef_names))
+  level <- as.character(coef_names)
+
+  for (i in seq_along(coef_names)) {
+
+    coef_name <- coef_names[i]
+
+    for (var in vars) {
+
+      x <- data[[var]]
+
+      # 无序因子
+      if (is.factor(x) && !is.ordered(x)) {
+
+        lev <- levels(x)
+
+        if (length(lev) > 1L) {
+          coef_expected <- paste0(var, lev[-1])
+          idx <- match(coef_name, coef_expected)
+
+          if (!is.na(idx)) {
+            term_var[i] <- var
+            ref[i] <- lev[1]
+            level[i] <- lev[-1][idx]
+            break
+          }
+        }
+
+        # 字符变量
+      } else if (is.character(x)) {
+
+        lev <- sort(unique(x[!is.na(x)]))
+
+        if (length(lev) > 1L) {
+          coef_expected <- paste0(var, lev[-1])
+          idx <- match(coef_name, coef_expected)
+
+          if (!is.na(idx)) {
+            term_var[i] <- var
+            ref[i] <- lev[1]
+            level[i] <- lev[-1][idx]
+            break
+          }
+        }
+
+        # 逻辑变量
+      } else if (is.logical(x)) {
+
+        if (identical(coef_name, paste0(var, "TRUE"))) {
+          term_var[i] <- var
+          ref[i] <- "FALSE"
+          level[i] <- "TRUE"
+          break
+        }
+
+        # 连续变量
+      } else if (is.numeric(x) && identical(coef_name, var)) {
+
+        term_var[i] <- var
+        ref[i] <- NA_character_
+        level[i] <- var
+        break
+      }
+    }
+  }
+
+  data.frame(
+    term_var = term_var,
+    ref = ref,
+    level = level,
+    stringsAsFactors = FALSE
+  )
+}
+
+
 # --- 内部函数：生成单个失败模型的NA结果 ---
 
 .batchCOX02_na_model <- function(data, vars, model_id) {
@@ -120,6 +200,12 @@
 
   n_rows <- length(level_names)
 
+  term_info <- .batchCOX02_term_info(
+    data = data,
+    vars = vars,
+    coef_names = level_names
+  )
+
   data.frame(
     model_id = rep(model_id, n_rows),
     var_number = rep(length(vars), n_rows),
@@ -128,7 +214,9 @@
       if (length(vars) > 1) paste0(vars[-1], collapse = ", ") else NA_character_,
       n_rows
     ),
-    level = level_names,
+    term_var = term_info$term_var,
+    ref = term_info$ref,
+    level = term_info$level,
     beta = rep(NA_real_, n_rows),
     se = rep(NA_real_, n_rows),
     Z = rep(NA_real_, n_rows),
@@ -494,6 +582,12 @@ batchCOX02 <- function(data, time_var, status_var,
         p_trend_value <- trend_coef[1, "Pr(>|z|)"]
       }
 
+      # 提取变量名、参考组和清洁后的水平名称
+      term_info <- .batchCOX02_term_info(
+        data = data,
+        vars = vars,
+        coef_names = rownames(sum_fit$coefficients)
+      )
 
       # 提取结果
       res_model <- data.frame(
@@ -505,7 +599,9 @@ batchCOX02 <- function(data, time_var, status_var,
         } else {
           NA_character_
         },
-        level = rownames(sum_fit$coefficients),
+        term_var = term_info$term_var,
+        ref = term_info$ref,
+        level = term_info$level,
         beta = sum_fit$coefficients[, "coef"],
         se = sum_fit$coefficients[, "se(coef)"],
         Z = sum_fit$coefficients[, "z"],
