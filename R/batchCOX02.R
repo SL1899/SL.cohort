@@ -331,8 +331,8 @@
 #'
 #' 若某个模型发生错误，该模型对应结果仍会保留，
 #' `model_id`、`var_number`、`fixed_var`、`model_name`、`adjust_vars`、
-#' `term_var`、`ref` 和 `level` 正常保留，其余结果列返回 `NA`，
-#' 并继续运行后续模型。
+#' `term_var`、`ref` 和 `level` 正常保留，
+#' 从 `beta` 开始的统计结果列全部返回 `NA`，并继续运行后续模型。
 #' 模型级错误信息同时保存在返回数据框的 `model_errors` 属性中，
 #' 供 [ParaCOX()] 汇总生成 `error.log`。
 #'
