@@ -190,7 +190,7 @@
 
 # --- 内部函数：生成单个失败模型的NA结果 ---
 
-.batchCOX02_na_model <- function(data, vars, model_id) {
+.batchCOX02_na_model <- function(data, vars, model_id, model_name = "") {
 
   level_names <- .batchCOX02_level_names(data, vars)
 
@@ -210,6 +210,7 @@
     model_id = rep(model_id, n_rows),
     var_number = rep(length(vars), n_rows),
     fixed_var = rep(vars[1], n_rows),
+    model_name = rep(model_name, n_rows),
     adjust_vars = rep(
       if (length(vars) > 1) paste0(vars[-1], collapse = ", ") else NA_character_,
       n_rows
@@ -255,18 +256,29 @@
 
   variable_combos <- list()
   combo_id <- 1L
+  model_names <- character()
+  adjust_names <- names(adjust_lists)
+
+  if (!is.null(adjust_lists)) {
+    if (is.null(adjust_names)) {
+      adjust_names <- rep("", length(adjust_lists))
+    }
+    adjust_names[is.na(adjust_names)] <- ""
+  }
 
   for (fixed in fixed_vars) {
 
     if (is.null(adjust_lists)) {
 
       variable_combos[[combo_id]] <- fixed
+      model_names[combo_id] <- ""
       combo_id <- combo_id + 1L
 
     } else {
 
-      for (adjust_group in adjust_lists) {
-        variable_combos[[combo_id]] <- c(fixed, adjust_group)
+      for (j in seq_along(adjust_lists)) {
+        variable_combos[[combo_id]] <- c(fixed, adjust_lists[[j]])
+        model_names[combo_id] <- adjust_names[j]
         combo_id <- combo_id + 1L
       }
     }
@@ -278,7 +290,8 @@
     results[[i]] <- .batchCOX02_na_model(
       data = data,
       vars = variable_combos[[i]],
-      model_id = i
+      model_id = i,
+      model_name = model_names[i]
     )
   }
 
@@ -316,9 +329,10 @@
 #' `levels()` 顺序赋值为 1、2、3……。因此，应确保因子水平
 #' 顺序具有明确的等级含义。
 #'
-#' 若某个模型发生错误，该模型对应结果仍会保留，前 5 列
-#' `model_id`、`var_number`、`fixed_var`、`adjust_vars` 和 `level`
-#' 正常保留，第 6 列及之后全部返回 `NA`，并继续运行后续模型。
+#' 若某个模型发生错误，该模型对应结果仍会保留，
+#' `model_id`、`var_number`、`fixed_var`、`model_name`、`adjust_vars`、
+#' `term_var`、`ref` 和 `level` 正常保留，其余结果列返回 `NA`，
+#' 并继续运行后续模型。
 #' 模型级错误信息同时保存在返回数据框的 `model_errors` 属性中，
 #' 供 [ParaCOX()] 汇总生成 `error.log`。
 #'
@@ -377,20 +391,29 @@ batchCOX02 <- function(data, time_var, status_var,
   # 生成所有变量组合：每个固定变量 + 每种调整组合
   variable_combos <- list()
   combo_id <- 1L
+  model_names <- character()
+  adjust_names <- names(adjust_lists)
+
+  if (!is.null(adjust_lists)) {
+    if (is.null(adjust_names)) {
+      adjust_names <- rep("", length(adjust_lists))
+    }
+    adjust_names[is.na(adjust_names)] <- ""
+  }
 
   for (fixed in fixed_vars) {
 
     if (is.null(adjust_lists)) {
 
-      # 只有固定变量，无调整变量
       variable_combos[[combo_id]] <- fixed
+      model_names[combo_id] <- ""
       combo_id <- combo_id + 1L
 
     } else {
 
-      # 固定变量 + 每种调整组合
-      for (adjust_group in adjust_lists) {
-        variable_combos[[combo_id]] <- c(fixed, adjust_group)
+      for (j in seq_along(adjust_lists)) {
+        variable_combos[[combo_id]] <- c(fixed, adjust_lists[[j]])
+        model_names[combo_id] <- adjust_names[j]
         combo_id <- combo_id + 1L
       }
     }
@@ -401,7 +424,8 @@ batchCOX02 <- function(data, time_var, status_var,
   for (i in seq_along(variable_combos)) {
 
     vars <- variable_combos[[i]]
-    model_name <- paste0(vars, collapse = "+")
+    result_name <- paste0(vars, collapse = "+")
+    adjust_model_name <- model_names[i]
 
 
     # 实时进度提示
@@ -594,6 +618,7 @@ batchCOX02 <- function(data, time_var, status_var,
         model_id = i,
         var_number = length(vars),
         fixed_var = vars[1],
+        model_name = adjust_model_name,
         adjust_vars = if (length(vars) > 1) {
           paste0(vars[-1], collapse = ", ")
         } else {
@@ -672,7 +697,8 @@ batchCOX02 <- function(data, time_var, status_var,
       .batchCOX02_na_model(
         data = data,
         vars = vars,
-        model_id = i
+        model_id = i,
+        model_name = adjust_model_name
       )
     }),
       warning = function(w) {
@@ -699,7 +725,7 @@ batchCOX02 <- function(data, time_var, status_var,
       )
     }
 
-    results[[model_name]] <- res
+    results[[result_name]] <- res
   }
 
 

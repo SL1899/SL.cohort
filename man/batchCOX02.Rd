@@ -53,7 +53,7 @@ batchCOX02(
 顺序具有明确的等级含义。
 
 若某个模型发生错误，该模型对应结果仍会保留，前 5 列
-\code{model_id}、\code{var_number}、\code{fixed_var}、\code{adjust_vars} 和 \code{level}
+\code{model_id}、\code{var_number}、\code{fixed_var}、\code{model_name}、\code{adjust_vars} 和 \code{level}
 正常保留，第 6 列及之后全部返回 \code{NA}，并继续运行后续模型。
 模型级错误信息同时保存在返回数据框的 \code{model_errors} 属性中，
 供 \code{\link[=ParaCOX]{ParaCOX()}} 汇总生成 \code{error.log}。
