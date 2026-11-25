@@ -40,7 +40,7 @@ analyze_data <- function(df, max_levels = 30) {
       # 全部缺失
       if (n_missing == n) {
 
-        q <- rep(NA_real_, 5)
+        q <- rep(NA_real_, 9)
         x_mean <- NA_real_
         x_sd <- NA_real_
 
@@ -49,7 +49,7 @@ analyze_data <- function(df, max_levels = 30) {
         # 一次性计算min、P25、median、P75、max
         q <- stats::quantile(
           x,
-          probs = c(0, 0.25, 0.5, 0.75, 1),
+          probs = c(0, 0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99, 1),
           na.rm = TRUE,
           names = FALSE
         )
@@ -70,10 +70,14 @@ analyze_data <- function(df, max_levels = 30) {
         mean = x_mean,
         sd = x_sd,
         min = q[1],
-        p25 = q[2],
-        median = q[3],
-        p75 = q[4],
-        max = q[5],
+        p01 = q[2],
+        p05 = q[3],
+        p25 = q[4],
+        median = q[5],
+        p75 = q[6],
+        p95 = q[7],
+        p99 = q[8],
+        max = q[9],
         level = NA_integer_,
         level_sortd = NA_character_,
         is_ordered = NA,
@@ -143,9 +147,13 @@ analyze_data <- function(df, max_levels = 30) {
         mean = NA_real_,
         sd = NA_real_,
         min = NA_real_,
+        p01 = NA_real_,
+        p05 = NA_real_,
         p25 = NA_real_,
         median = NA_real_,
         p75 = NA_real_,
+        p95 = NA_real_,
+        p99 = NA_real_,
         max = NA_real_,
         level = min(total_levels, max_levels),
         level_sortd = level_counts,
